@@ -1,101 +1,132 @@
-import Image from "next/image";
+// app/page.tsx
+import React from 'react';
+import { Button } from "@/components/ui/button";
+import { UserButton } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
+import Link from "next/link";
+import { LogIn, FileText, Users, Brain } from "lucide-react";
+import FileUpload from "@/components/FileUpload";
+import { db } from "@/lib/db";
+import { chats } from "@/lib/db/schema";
+// import { PDFProvider } from '@/components/PDFContext';
 
-export default function Home() {
+const FeatureCard = ({ icon: Icon, title, description }: {
+  icon: any;
+  title: string;
+  description: string;
+}) => (
+  <div className="p-6 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+    <Icon className="w-8 h-8 text-purple-600 mb-4" />
+    <h3 className="text-xl font-semibold mb-2">{title}</h3>
+    <p className="text-slate-600">{description}</p>
+  </div>
+);
+
+const features = [
+  {
+    icon: FileText,
+    title: "Any PDF, Anytime",
+    description: "Upload any PDF document and start chatting instantly with AI-powered insights"
+  },
+  {
+    icon: Brain,
+    title: "Smart Analysis",
+    description: "Advanced AI technology understands context and provides accurate responses"
+  },
+  {
+    icon: Users,
+    title: "Growing Community",
+    description: "Join over 50,000 users who trust our platform for their research needs"
+  }
+];
+
+async function getFirstChatId() {
+  try {
+    const result = await db
+      .select({ id: chats.id })
+      .from(chats)
+      .orderBy(chats.createdAt)
+      .limit(1);
+    
+    return result?.[0]?.id || null;
+  } catch (error) {
+    console.error("Error fetching first chat:", error);
+    return null;
+  }
+}
+
+export default async function Home() {
+  const { userId } = await auth();
+  const isAuth = !!userId;
+  const firstChatId = isAuth ? await getFirstChatId() : null;
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+      <div className="absolute top-4 right-4">
+        {isAuth ? (
+          <UserButton afterSignOutUrl="/" />
+        ) : (
+          <Link href="/sign-in">
+            <Button variant="outline" className="shadow-sm">
+              <LogIn className="w-4 h-4 mr-2" />
+              Sign In
+            </Button>
+          </Link>
+        )}
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <div className="container mx-auto px-4 pt-20 pb-12">
+        <div className="max-w-4xl mx-auto text-center mb-16">
+          <h1 className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600 mb-6 animate-fade-in">
+            Chat With Any PDF
+          </h1>
+          <p className="text-xl text-slate-600 mb-8 animate-fade-in-up">
+            Transform the way you interact with documents. Get instant answers, analyze research,
+            and extract insights with our AI-powered chat interface.
+          </p>
+
+          <div className="flex justify-center gap-4 mb-12">
+            {isAuth ? (
+              <div className="w-full max-w-md">
+                {/* <PDFProvider> */}
+                  <FileUpload />
+                {/* </PDFProvider> */}
+              </div>
+            ) : (
+              <Link href="/sign-in">
+                <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                  Start Chatting Now
+                  <LogIn className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            )}
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mt-16">
+            {features.map((feature, index) => (
+              <FeatureCard key={index} {...feature} />
+            ))}
+          </div>
+
+          {isAuth && (
+            <div className="mt-12">
+              {firstChatId ? (
+                <Link href={`/chat/${firstChatId}`}>
+                  <Button variant="outline" size="lg" className="shadow-sm">
+                    Continue Last Chat
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/chats">
+                  <Button variant="outline" size="lg" className="shadow-sm">
+                    Go to My Chats
+                  </Button>
+                </Link>
+              )}
+            </div>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
 }
