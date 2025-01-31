@@ -1,8 +1,8 @@
 import { db } from "@/lib/db";
 import { chats } from "@/lib/db/schema";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Get the first chat ID with proper ordering
     const result = await db

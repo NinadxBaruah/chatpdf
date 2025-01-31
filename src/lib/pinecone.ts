@@ -130,13 +130,14 @@ export const truncateStringByBytes = (str: string, bytes: number) => {
   try {
     return decoder.decode(sliced);
   } catch (error) {
+    console.log(error)
     return decoder.decode(sliced.slice(0, -1));
   }
 };
 
 async function prepareDocs(page: PDFPage) {
-  let { pageContent, metadata } = page;
-
+  const { metadata } = page;
+  let {pageContent} = page;
   // Clean content
   pageContent = pageContent.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
 
