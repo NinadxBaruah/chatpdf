@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     const lastMessage: string = messages[messages.length - 1].content;
     const context = await getCotext(lastMessage, fileKey);
-    // console.log("context---------->", context);
+    console.log("context---------->", context);
 
     const prompt = {
       role: "system",
@@ -58,7 +58,9 @@ export async function POST(req: NextRequest) {
       `,
     };
     
-    // console.log(prompt)
+
+    try {
+          // console.log(prompt)
     const result = streamText({
       model: model,
       system: "You are a helpful assistant.",
@@ -81,12 +83,19 @@ export async function POST(req: NextRequest) {
           // console.log(text)
         })()
       },
+      
     });
+
+        // Return the streaming response
+        return result.toTextStreamResponse();
+    } catch (error) {
+      return NextResponse.json(error)
+
+    }
 
     
 
-    // Return the streaming response
-    return result.toTextStreamResponse();
+
   } catch (error) {
     console.error(error);
     return new NextResponse("Error processing request", { status: 500 });

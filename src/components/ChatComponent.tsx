@@ -7,6 +7,7 @@ import { SendHorizonal } from "lucide-react";
 import MessageList from "./MessageList";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 type Props = { chatId: number };
 
@@ -19,11 +20,15 @@ const ChatComponent = ({ chatId }: Props) => {
     }
   });
 
-  const { input, handleInputChange, handleSubmit, messages } = useChat({
+  const { input, handleInputChange, handleSubmit, messages  , error} = useChat({
     streamProtocol:"text",
     body: { chatId },
     initialMessages: data || [],
   });
+
+  if(error){
+    toast.error("Model is too busy")
+  }
 
   useEffect(() => {
     const messageContainer = document.getElementById('message-container');

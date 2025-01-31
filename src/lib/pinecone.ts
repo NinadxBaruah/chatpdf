@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { Pinecone } from "@pinecone-database/pinecone";
 import { downloadFromS3 } from "./s3-server";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
@@ -81,6 +82,14 @@ export async function loadS3IntoPinecone(file_key: string) {
     }
   }
 
+    // 8. Delete the file from the local system after processing
+    fs.unlink(file_name, (err) => {
+      if (err) {
+        console.error(`Error deleting file ${file_name}:`, err);
+      } else {
+        console.log(`File ${file_name} deleted successfully.`);
+      }
+    });
   return {
     success: successfulUpserts === vectorBatches.length,
     batchesAttempted: vectorBatches.length,

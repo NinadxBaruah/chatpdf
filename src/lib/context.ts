@@ -22,7 +22,7 @@ export async function getVectorSearchInNameSpace(
     try {
         const nameSpace = convertToAscii(fileKey);
         const queryResult = await index.namespace(nameSpace).query({
-            topK : 5,
+            topK : 100,
             vector: embeddings,
             includeMetadata: true,
         })
@@ -41,9 +41,9 @@ export async function getCotext(query: string, fileKey: string) {
 
     const matches = await getVectorSearchInNameSpace(queryEmbeddings , fileKey);
 
-    // console.log("Matched emb---->" ,   matches)
+    console.log("Matched emb---->" ,   matches)
 
-    const docsToShow = matches?.filter( (match) => match.score && match.score > 0.5);
+    const docsToShow = matches?.filter( (match) => match.score && match.score > 0.2);
 
     type Metadata = {
         text : string ,
