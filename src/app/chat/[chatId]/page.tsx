@@ -70,7 +70,7 @@ const ChatPage = async ({ params }: Props) => {
     <div className="flex-1 flex flex-col md:flex-row h-[calc(100vh-3rem)] md:h-screen overflow-hidden bg-gray-50">
       {/* PDF Viewer */}
       <div className="flex-1 h-full overflow-auto p-4 bg-white shadow-sm md:block hidden" id="pdf-view">
-        <PDFViewer pdf_url={currentChat?.pdfUrl || ''}/>
+        <PDFViewer pdf_url={currentChat?.pdfUrl || ''} />
       </div>
 
       {/* Chat Component */}
