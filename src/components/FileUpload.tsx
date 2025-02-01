@@ -48,13 +48,13 @@ const FileUpload = () => {
           onSuccess: ({chat_id}) => {
             toast.success("chat created");
             router.push(`/chat/${chat_id}`)
-            console.log(data)
+            // console.log(data)
           },
           onError: () => {
             toast.error("Error creating chat");
           },
         });
-        console.log(data);
+        // console.log(data);
       } catch (error) {
         console.log("error while uplading the file to S3 bucket",error);
       } finally {

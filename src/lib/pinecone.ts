@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from "fs";
 import { Pinecone } from "@pinecone-database/pinecone";
 import { downloadFromS3 } from "./s3-server";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
@@ -7,6 +7,9 @@ import { Document } from "@langchain/core/documents";
 import { getEmbeddings } from "./embedding";
 import md5 from "md5";
 import { convertToAscii } from "./utils";
+import { db } from "./db";
+import { chats } from "./db/schema";
+import { eq, sql } from "drizzle-orm";
 // import {Document }  from "@pinecone-database/doc-splitter"
 const initializePinecone = async () => {
   const pinecone = new Pinecone({
@@ -51,7 +54,9 @@ export async function loadS3IntoPinecone(file_key: string) {
   const documents = (await Promise.all(pages.map(prepareDocs))).flat();
 
   // 4. Now vectorize the documents
-  const vectors = await Promise.all(documents.map(embedDocument));
+  const vectors = await Promise.all(
+    documents.map((item) => embedDocument(file_key, item))
+  );
 
   // 5. upload the vectors to pinecone
 
@@ -64,7 +69,7 @@ export async function loadS3IntoPinecone(file_key: string) {
   const nameSpace = convertToAscii(file_key);
 
   // 6. Batch upsert with smaller chunks
-  const BATCH_SIZE = 10; 
+  const BATCH_SIZE = 10;
   const vectorBatches = chunkArray(vectors, BATCH_SIZE);
 
   // 7. Process batches with progress tracking
@@ -78,25 +83,23 @@ export async function loadS3IntoPinecone(file_key: string) {
       );
     } catch (error) {
       console.error(`Failed batch ${i + 1}:`, error);
-      // Optional: Add retry logic here if needed
     }
   }
 
-    // 8. Delete the file from the local system after processing
-    fs.unlink(file_name, (err) => {
-      if (err) {
-        console.error(`Error deleting file ${file_name}:`, err);
-      } else {
-        console.log(`File ${file_name} deleted successfully.`);
-      }
-    });
+  // 8. Delete the file from the local system after processing
+  fs.unlink(file_name, (err) => {
+    if (err) {
+      console.error(`Error deleting file ${file_name}:`, err);
+    } else {
+      console.log(`File ${file_name} deleted successfully.`);
+    }
+  });
   return {
     success: successfulUpserts === vectorBatches.length,
     batchesAttempted: vectorBatches.length,
     batchesSucceeded: successfulUpserts,
     totalVectors: vectors.length,
   };
-
 }
 
 // Chunk array helper remains the same
@@ -106,10 +109,32 @@ const chunkArray = <T>(array: T[], chunkSize: number): T[][] => {
     (_, index) => array.slice(index * chunkSize, (index + 1) * chunkSize)
   );
 };
-async function embedDocument(doc: Document) {
+
+// Updated embedDocument function
+async function embedDocument(fileKey: string, doc: Document) {
   try {
     const embeddings = await getEmbeddings(doc.pageContent);
     const hash = md5(doc.pageContent);
+    const newFileKey = convertToAscii(fileKey);
+
+    // Check if the record exists
+    const existingChat = await db
+      .select()
+      .from(chats)
+      .where(eq(chats.fileKey, newFileKey));
+
+    if (existingChat.length > 0) {
+      // Correct update using array_append directly
+      const res = await db
+        .update(chats)
+        .set({
+          vectorIds : sql`array_append(${chats.vectorIds}, ${hash})` 
+        })
+        .where(eq(chats.fileKey, newFileKey))
+        .returning();
+
+      console.log("Update result:", res);
+    }
 
     return {
       id: hash,
@@ -139,14 +164,14 @@ export const truncateStringByBytes = (str: string, bytes: number) => {
   try {
     return decoder.decode(sliced);
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return decoder.decode(sliced.slice(0, -1));
   }
 };
 
 async function prepareDocs(page: PDFPage) {
   const { metadata } = page;
-  let {pageContent} = page;
+  let { pageContent } = page;
   // Clean content
   pageContent = pageContent.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
 

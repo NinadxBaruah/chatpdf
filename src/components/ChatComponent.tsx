@@ -20,7 +20,7 @@ const ChatComponent = ({ chatId }: Props) => {
     }
   });
 
-  const { input, handleInputChange, handleSubmit, messages  , error} = useChat({
+  const { input, handleInputChange, handleSubmit, messages  , error , isLoading} = useChat({
     streamProtocol:"text",
     body: { chatId },
     initialMessages: data || [],
@@ -38,7 +38,7 @@ const ChatComponent = ({ chatId }: Props) => {
         behavior: 'smooth',
       });
     }
-  }, [messages]);
+  }, [messages , isLoading]);
 
   useEffect(() => {
     // Sidebar toggle logic
@@ -102,15 +102,21 @@ const ChatComponent = ({ chatId }: Props) => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4 border-b bg-white/95 backdrop-blur">
-        <h3 className="text-lg font-semibold text-gray-800">Chat</h3>
-      </div>
+    {/* Header */}
+    <div className="p-4 border-b bg-white/95 backdrop-blur">
+      <h3 className="text-lg font-semibold text-gray-800">Chat</h3>
+    </div>
 
-      <div className="flex-1 overflow-auto p-4" id="message-container">
-        <MessageList messages={messages} />
+    {/* Messages Container */}
+    <div className="flex-1 overflow-y-auto px-4 py-2">
+      <div className="pb-4">
+        <MessageList messages={messages} isLoading={isLoading}/>
       </div>
+    </div>
 
-      <form onSubmit={handleSubmit} className="sticky bottom-0 p-4 border-t bg-white/95 backdrop-blur">
+    {/* Form */}
+    <div className="border-t bg-white/95 backdrop-blur px-4 py-3">
+      <form onSubmit={handleSubmit}>
         <div className="flex gap-2 items-center">
           <Input
             value={input}
@@ -120,13 +126,15 @@ const ChatComponent = ({ chatId }: Props) => {
           />
           <Button 
             type="submit" 
-            className="rounded-full w-10 h-10 p-0 bg-gradient-to-br from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-sm"
+            className="rounded-full w-10 h-10 p-0 bg-gradient-to-br from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-sm flex-shrink-0"
           >
             <SendHorizonal className="h-4 w-4 text-white" />
           </Button>
         </div>
       </form>
     </div>
+  </div>
+
   );
 };
 
