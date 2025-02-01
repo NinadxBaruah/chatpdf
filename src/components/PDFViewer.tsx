@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 interface PDFViewerProps {
   pdf_url: string;
@@ -9,6 +9,8 @@ interface PDFViewerProps {
 
 const PDFViewer: React.FC<PDFViewerProps> = ({ pdf_url, className = '', style = {} }) => {
   const [isMobile, setIsMobile] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [iframeKey, setIframeKey] = useState(0); // Used to force iframe refresh
 
   useEffect(() => {
     // Check if device is mobile
@@ -28,6 +30,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdf_url, className = '', style = 
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  const refreshIframe = () => {
+    setIframeKey(prev => prev + 1); // Force iframe refresh by changing key
+  };
+
   if (!pdf_url) {
     return <div className="text-center text-gray-500">No PDF URL provided</div>;
   }
@@ -35,39 +41,42 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdf_url, className = '', style = 
   // Mobile view
   if (isMobile) {
     return (
-      <div className={`w-full flex flex-col items-center justify-center p-4 ${className}`} style={style}>
-        <div className="text-center mb-4">
-          <p className="text-gray-600 mb-2">Choose an option to view the PDF:</p>
-        </div>
-        
-        {/* Download option */}
-        <a 
-          href={pdf_url}
-          download
-          className="w-full max-w-sm mb-3 px-4 py-3 bg-blue-500 text-white rounded-lg text-center hover:bg-blue-600 transition-colors"
+      <div className={`w-full flex flex-col ${className}`} style={style}>
+        {/* Refresh button */}
+        <button
+          onClick={refreshIframe}
+          className="self-end mb-2 px-3 py-1 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
         >
-          Download PDF
-        </a>
-        
-        {/* Open in new tab option */}
-        <a 
-          href={pdf_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full max-w-sm px-4 py-3 bg-gray-500 text-white rounded-lg text-center hover:bg-gray-600 transition-colors"
-        >
-          Open in New Tab
-        </a>
+          Refresh PDF
+        </button>
 
-        {/* Google Drive Viewer option (as fallback) */}
-        <a 
-          href={`https://drive.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(pdf_url)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full max-w-sm mt-3 px-4 py-3 bg-green-500 text-white rounded-lg text-center hover:bg-green-600 transition-colors"
-        >
-          Open in Google Viewer
-        </a>
+        {/* Google Drive Viewer iframe */}
+        <iframe
+          key={iframeKey}
+          ref={iframeRef}
+          src={`https://drive.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(pdf_url)}`}
+          className="w-full h-[calc(100%-40px)] min-h-[500px] border-0"
+          allow="fullscreen"
+        />
+
+        {/* Fallback options */}
+        <div className="mt-2 flex gap-2 justify-end">
+          <a 
+            href={pdf_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-1 bg-gray-500 text-white text-sm rounded hover:bg-gray-600 transition-colors"
+          >
+            Open in New Tab
+          </a>
+          <a 
+            href={pdf_url}
+            download
+            className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600 transition-colors"
+          >
+            Download
+          </a>
+        </div>
       </div>
     );
   }
