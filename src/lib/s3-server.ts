@@ -22,7 +22,8 @@ export async function downloadFromS3(file_key: string): Promise<string> {
         const { Body } = await s3Client.send(command);
         if (!Body) throw new Error('Empty file content');
 
-        const tempDir = join(process.cwd(), 'temp');
+        // const tempDir = join(process.cwd(), 'temp');
+        const tempDir = '/tmp';
         await fs.mkdir(tempDir, { recursive: true });
 
         const file_name = join(tempDir, `pdf-${Date.now()}.pdf`);
