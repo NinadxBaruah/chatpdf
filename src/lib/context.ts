@@ -4,7 +4,7 @@ import { getEmbeddings } from "./embedding";
 import { db } from "./db";
 import { chats, DrizzleChat } from "./db/schema";
 import { eq } from "drizzle-orm";
-// import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 
@@ -99,14 +99,22 @@ export async function getAllPinceconeEmbeddings(fileKey: string) : Promise<Pinec
 }
 
 export async function getCotext(query: string, fileKey: string) {
-  const openAi = createOpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
 
-  const model2 = openAi("gpt-4o-mini");
+  const google = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+});
+
+const model = google("gemini-1.5-flash-8b");
+
+
+  // const openAi = createOpenAI({
+  //   apiKey: process.env.OPENAI_API_KEY,
+  // });
+
+  // const model2 = openAi("gpt-4o-mini");
 
   const ai_response = await generateText({
-    model: model2,
+    model: model,
     system: "You are a helpfull assistant",
     prompt: `Analyze the user's query below. Respond with **only** "true" or "false" (no punctuation, explanations, or formatting) based on the following criteria:
 
