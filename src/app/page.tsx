@@ -63,6 +63,20 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+<div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 w-full max-w-[200px] md:max-w-none px-2">
+  <Link 
+    href="http://ninadbaruah.me/" 
+    target="_blank" 
+    rel="noopener noreferrer" 
+    className="text-xs md:text-sm font-medium text-slate-600 hover:text-purple-600 transition-colors duration-300 flex items-center justify-center gap-1 group"
+  >
+    Made with <span className="text-red-500 animate-pulse">💓</span> by{" "}
+    <span className="relative inline-block">
+      <span className="relative z-10">Ninad Baruah</span>
+      <span className="absolute bottom-0 left-0 w-full h-px bg-current transition-all duration-300 group-hover:h-[2px]"></span>
+    </span>
+  </Link>
+</div>
       <div className="absolute top-4 right-4">
         {isAuth ? (
           <UserButton afterSignOutUrl="/" />
