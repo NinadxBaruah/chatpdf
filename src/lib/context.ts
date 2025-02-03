@@ -6,7 +6,7 @@ import { chats, DrizzleChat } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
+// import { createOpenAI } from "@ai-sdk/openai";
 
 const initializePinecone = async () => {
   const pinecone = new Pinecone({
