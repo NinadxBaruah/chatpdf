@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export async function GET( ) {
   try {
     // Get the first chat ID with proper ordering
-
+    console.log("------>here")
     const result = await db
       .select({ id: chats.id })
       .from(chats)
