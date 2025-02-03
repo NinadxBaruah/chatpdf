@@ -2,10 +2,10 @@ import { db } from "@/lib/db";
 import { chats } from "@/lib/db/schema";
 import { NextResponse } from "next/server";
 
-export async function GET(request : NextResponse ) {
+export async function GET( ) {
   try {
     // Get the first chat ID with proper ordering
-    console.log(request)
+
     const result = await db
       .select({ id: chats.id })
       .from(chats)
