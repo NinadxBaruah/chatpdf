@@ -4,6 +4,7 @@ import PDFViewer from "@/components/PDFViewer";
 import { db } from "@/lib/db";
 import { chats } from "@/lib/db/schema";
 import { auth } from "@clerk/nextjs/server";
+import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import React from "react";
 
@@ -24,7 +25,7 @@ const ChatPage = async ({ params }: Props) => {
   //   .from(chats)
   //   .where(eq(chats.id, parseInt(chatId)));
 
-  const _allChats = await db.select().from(chats)
+  const _allChats = await db.select().from(chats).where(eq(chats.userId , userId))
 
   // console.log("_allChats",_allChats)
   if (!_allChats || !_allChats.find((chat) => chat.id === parseInt(chatId))) {
@@ -32,7 +33,7 @@ const ChatPage = async ({ params }: Props) => {
   }
 
   const currentChat = _allChats.find(chat => chat.id === parseInt(chatId));
-
+ 
   return (
     <div className="h-screen w-full flex flex-col md:flex-row">
     {/* Mobile Header */}

@@ -126,7 +126,7 @@ export default async function Home() {
           {isAuth && (
             <div className="mt-12">
               {firstChatId ? (
-                <Link href={`/chat/${firstChatId}`}>
+                <Link href={`/chat/${firstChatId}?userId=${userId}`}>
                   <Button variant="outline" size="lg" className="shadow-sm">
                     Continue Last Chat
                   </Button>
